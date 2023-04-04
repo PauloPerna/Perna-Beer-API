@@ -61,6 +61,15 @@ namespace WebApi.Controllers
         [Route("CreateMultiple")]
         public async Task<ActionResult<IEnumerable<Brew>>> PostBrews(List<Brew> brews)
         {
+            var repeatedIds = brews.GroupBy(b => b.Id)
+                             .Where(g => g.Count() > 1)
+                             .Select(g => g.Key)
+                             .ToList();
+            if (repeatedIds.Any())
+            {
+                return BadRequest($"The following Brew IDs are repeated in your request: {string.Join(",", repeatedIds)}");
+            }
+
             var existingIds = await _context.Brews.Where(b => brews.Select(nb => nb.Id).Contains(b.Id)).Select(b => b.Id).ToListAsync();
             if (existingIds.Any())
             {
