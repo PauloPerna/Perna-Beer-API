@@ -53,14 +53,30 @@ namespace WebApi.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Brew>> GetBrew(int id)
         {
-            var brew = await _context.Brews.FindAsync(id);
-
-            if (brew == null)
+            if (!BrewExists(id))
             {
                 return NotFound();
             }
 
+            var brew = await _context.Brews.FindAsync(id);
             return brew;
+        }
+
+        // GET: api/Brews/Search?q=IPA
+        [HttpGet("Search")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<Brew>>> SearchBrews(string q)
+        {
+            var brews = await _context.Brews
+                .Where(b => b.Name.Contains(q) || b.Style.Contains(q) || b.Description.Contains(q))
+                .ToListAsync();
+            
+            if(brews == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(brews);
         }
 
         // POST: api/Brews/Create
@@ -68,11 +84,8 @@ namespace WebApi.Controllers
         [Route("Create")]
         public async Task<ActionResult<Brew>> PostBrew(Brew brew)
         {
-            var existingId = await _context.Brews.Where(b => b.Id == brew.Id).Select(b => b.Id).ToListAsync();
-            if (existingId.Any())
-            {
-                return BadRequest($"The following Brew ID already exist: {string.Join(",", existingId)}");
-            }
+            brew.Id = 0;
+
             _context.Brews.Add(brew);
             await _context.SaveChangesAsync();
 
@@ -84,20 +97,7 @@ namespace WebApi.Controllers
         [Route("CreateMultiple")]
         public async Task<ActionResult<IEnumerable<Brew>>> PostBrews(List<Brew> brews)
         {
-            var repeatedIds = brews.GroupBy(b => b.Id)
-                             .Where(g => g.Count() > 1)
-                             .Select(g => g.Key)
-                             .ToList();
-            if (repeatedIds.Any())
-            {
-                return BadRequest($"The following Brew IDs are repeated in your request: {string.Join(",", repeatedIds)}");
-            }
-
-            var existingIds = await _context.Brews.Where(b => brews.Select(nb => nb.Id).Contains(b.Id)).Select(b => b.Id).ToListAsync();
-            if (existingIds.Any())
-            {
-                return BadRequest($"The following Brew IDs already exist: {string.Join(",", existingIds)}");
-            }
+            brews.ForEach(b => b.Id = 0);
 
             _context.Brews.AddRange(brews);
             await _context.SaveChangesAsync();
@@ -109,10 +109,7 @@ namespace WebApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBrew(int id, Brew brew)
         {
-            if (id != brew.Id)
-            {
-                return BadRequest();
-            }
+            brew.Id = id;
 
             _context.Entry(brew).State = EntityState.Modified;
 
@@ -139,12 +136,12 @@ namespace WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBrew(int id)
         {
-            var brew = await _context.Brews.FindAsync(id);
-            if (brew == null)
+            if (!BrewExists(id))
             {
                 return NotFound();
             }
 
+            var brew = await _context.Brews.FindAsync(id);
             _context.Brews.Remove(brew);
             await _context.SaveChangesAsync();
 

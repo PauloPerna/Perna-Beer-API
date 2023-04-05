@@ -28,108 +28,408 @@ POST https://perna-beer-api.azurewebsites.net/api/Auth/login
   "password": "password"
 }
 ```
-You can access the API via the Swagger UI at https://perna-beer-api.azurewebsites.net/swagger/index.html. Note that there is an "Authorize" field in the UI where you can enter the JWT token obtained from the previous request. Swagger will then automatically fill in the 'Authorize' field with the correct parameter for subsequent requests.
+You can access the API via the Swagger UI at https://perna-beer-api.azurewebsites.net/swagger/index.html. Note that there is an "Authorize" field in the UI where you can enter the JWT token obtained from the previous request. Swagger will then automatically fill in the 'Authorize' parameter with the correct value for subsequent requests.
 
 ## API Documentation
-The API contains the following endpoints:
 
-`POST https://perna-beer-api.azurewebsites.net/api/Auth/register`
+### Auth
+#### POST `/api/Auth/register`
 
-Creates a new user. A JSON object with the following format is required in the request body:
+Creates a new user. 
+
+##### Authentication
+
+This endpoint requires a valid JWT token in the Authorization header. To obtain a token, see the /api/Auth/login endpoint.
+
+##### Request Body
+
+The request body must contain a JSON object with the following properties:
+ - `username` (string, required): The username for the new user.
+ - `password` (string, required): The password for the new user.
+
+##### Response
+
+If the user is created successfully, the response will have a status code of 201 (Created). The response body will be a JSON object containing the newly created user's information.
+
+If the username already exists in the database, the response will have a status code of 400 (Bad Request) and the response body will contain an error message indicating that the username is already taken.
+
+##### Example Request
+
 ```
+POST /api/Auth/register HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+
 {
-  "username": "string",
-  "password": "string"
+  "username": "John Doe",
+  "password": "SecretPassword123"
 }
 ```
 
-`POST https://perna-beer-api.azurewebsites.net/api/Auth/login`
+##### Example Response
 
-Creates a JWT token for accessing restricted endpoints. A JSON object with the following format is required in the request body:
 ```
+HTTP/1.1 201 Created
+Content-Type: application/json
+
 {
-  "username": "string",
-  "password": "string"
+  "username": "John Doe"
 }
 ```
 
-`GET https://perna-beer-api.azurewebsites.net/api/Brews/`
+#### POST `/api/Auth/login`
+
+Creates a JWT token for accessing restricted endpoints.
+
+##### Request Body
+
+The request body must contain a JSON object with the following properties:
+ - `username` (string, required): The username.
+ - `password` (string, required): The password.
+
+##### Response
+
+If the username and password are correct, the response will have a status code of 200 (OK) and the response body will contain a JWT token that can be used to access restricted endpoints.
+
+##### Example Request
+
+```
+POST /api/Auth/login HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+Content-Type: application/json
+
+{
+  "username": "John Doe",
+  "password": "SecretPassword123"
+}
+```
+
+##### Example Response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+"eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxvbyIsImV4cCI6MTY4MDgxNDUwMX0.uoT3NJ0yuv9235kRWRDiGU3kijzBpiFxuC7N25Glmdu1bRuCBoWki3f9ocLNftZrBwpv27LL14MxAjpKknZmdQ"
+```
+
+### Brews
+#### GET `/api/Brews/`
 
 Returns a JSON with all items from the 'Brews' table.
 
-This endpoint can also receive the following filter parameters:
+##### Parameters 
 
 - abvMin (decimal): filters the results to only include brews with an ABV (alcohol by volume) greater than or equal to this value.
 - abvMax (decimal): filters the results to only include brews with an ABV (alcohol by volume) less than or equal to this value.
 - ibuMin (decimal): filters the results to only include brews with an IBU (international bitterness unit) greater than or equal to this value.
 - ibuMax (decimal): filters the results to only include brews with an IBU (international bitterness unit) less than or equal to this value.
 
-Example usage:
-`GET https://perna-beer-api.azurewebsites.net/api/Brews/?abvMin=4.5&abvMax=5.5&ibuMin=20&ibuMax=40`
+##### Response
 
-This will return all brews with an ABV between 4.5 and 5.5 and an IBU between 20 and 40.
+The response is a JSON array of objects, each representing a brew in the 'Brews' table. The object has the following properties:
 
-`GET https://perna-beer-api.azurewebsites.net/api/Brews/{id}`
+ - `id` (integer): The unique identifier of the brew.
+ - `name` (string): The name of the brew.
+ - `style` (string): The style of the brew.
+ - `abv` (decimal): The ABV (alcohol by volume) of the brew.
+ - `ibu` (decimal): The IBU (international bitterness unit) of the brew.
+ - `description` (string): A description of the brew.
+
+##### Example Request
+
+```
+GET /api/Brews?abvMin=4.5&abvMax=5.5&ibuMin=20&ibuMax=40 HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+```
+
+##### Example Response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":1,"name":"WitBier","style":"Belgian Witbier","abv":5.00,"ibu":20,"description":"A refreshing wheat beer with citrus and coriander notes"},{"id":7,"name":"Pilsner","style":"Czech Pilsner","abv":4.50,"ibu":35,"description":"A light and crisp lager with a floral and herbal hop profile."},{"id":8,"name":"Brown Ale","style":"English Brown Ale","abv":5.00,"ibu":25,"description":"A malt-forward beer with nutty and caramel flavors and a subtle hop bitterness."}]
+```
+
+#### GET `/api/Brews/{id}`
 
 Returns a JSON representation of the item from the 'Brews' table that matches the specified id.
 
-`PUT https://perna-beer-api.azurewebsites.net/api/Brews/{id}`
+##### Parameters 
 
-Updates the item from the 'Brews' table that matches the specified {id}. The updates must be passed in the request body in JSON format, as shown in the example below.
+- id (integer): The unique identifier of the brew to retrieve.
 
-Note that the 'id' of the object in the request body and the request parameter must be the same.
+##### Response
+
+The response is a JSON array of objects, each representing a brew in the 'Brews' table. The object has the following properties:
+
+ - `id` (integer): The unique identifier of the brew.
+ - `name` (string): The name of the brew.
+ - `style` (string): The style of the brew.
+ - `abv` (decimal): The ABV (alcohol by volume) of the brew.
+ - `ibu` (decimal): The IBU (international bitterness unit) of the brew.
+ - `description` (string): A description of the brew.
+
+##### Example Request
+
 ```
+GET /api/Brews/2 HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+```
+
+##### Example Response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
 {
-  "id": 0,
-  "name": "string",
-  "style": "string",
-  "abv": 0,
-  "ibu": 0,
-  "description": "string"
+  "id": 2,
+  "name": "Weissbier",
+  "style": "German Wheat Beer",
+  "abv": 5.2,
+  "ibu": 12,
+  "description": "A light, refreshing wheat beer"
 }
 ```
 
-`DELETE https://perna-beer-api.azurewebsites.net/api/Brews/{id}`
+#### PUT `/api/Brews/{id}`
+
+Updates the item from the 'Brews' table that matches the specified `id`. The updates must be passed in the request body in JSON format, as shown in the example below.
+
+##### Authentication
+
+This endpoint requires a valid JWT token in the Authorization header. To obtain a token, see the /api/Auth/login endpoint.
+
+##### Parameters
+
+- id (integer): The unique identifier of the brew to update.
+
+##### Request Body
+
+The request body must contain a JSON object with all the following properties:
+
+ - `name` (string): The new name of the brew.
+ - `style` (string): The new style of the brew.
+ - `abv` (decimal): The new ABV (alcohol by volume) of the brew.
+ - `ibu` (decimal): The new IBU (international bitterness unit) of the brew.
+ - `description` (string): The new description of the brew.
+
+##### Response
+
+If the update is successful, the response will have a status code of 204 (No Content).
+
+##### Example Request
+
+```
+PUT /api/Brews/2 HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+
+{
+  "name": "Weissbier",
+  "style": "German Wheat Beer",
+  "abv": 5.2,
+  "ibu": 12,
+  "description": "A light, refreshing wheat beer"
+}
+```
+
+##### Example Response
+
+```
+HTTP/1.1 204 No Content
+```
+
+#### DELETE `/api/Brews/{id}`
 
 Deletes the item from the 'Brews' table that matches the specified {id}.
 
-`POST https://perna-beer-api.azurewebsites.net/api/Brews/Create`
+##### Authentication
+
+This endpoint requires a valid JWT token in the Authorization header. To obtain a token, see the /api/Auth/login endpoint.
+
+##### Parameters
+
+- id (integer): The unique identifier of the brew to deleted.
+
+##### Response
+
+If the brew is deleted successfully, the response will have a status code of 204 (No Content).
+
+##### Example Request
+
+```
+DELETE /api/Brews/10 HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+``` 
+
+##### Example Response
+
+```
+HTTP/1.1 204 No Content
+```
+
+#### GET `/api/Brews/Search?q={search_string}`
+
+Returns a list of Brew objects whose name, style or description contains the provided search string. The search is not case sensitive.
+
+##### Parameters
+
+ - `q` (required): A string representing the search term.
+
+##### Response
+
+The response returns a JSON object with the following properties:
+
+ - `id` (integer): The unique identifier of the brew.
+ - `name` (string): The name of the brew.
+ - `style` (string): The style of the brew.
+ - `abv` (number): The Alcohol By Volume (ABV) of the brew.
+ - `ibu` (integer): The International Bitterness Units (IBU) of the brew.
+ - `description` (string): The description of the brew.
+
+##### Example Request
+
+```
+GET /api/Brews/Search?q=IPA HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+```
+
+##### Example Respose
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+[{"id": 3,    "name": "IPA",    "style": "India Pale Ale",    "abv": 6.5,    "ibu": 70,    "description": "A hoppy beer with a bitter finish"  },  {   "id": 11,    "name": "Hoppy IPA",    "style": "IPA",    "abv": 7,    "ibu": 70,    "description": "A hop-forward IPA with a strong malt backbone."  }]
+```
+
+#### POST `/api/Brews/Create`
 
 Inserts a new item into the database. The new item must be passed in the request body in JSON format, as shown in the example below.
-Note that the Id is not generated automatically and must be informed in the request.
+The id will be autogenerated and if there's an id in the JSON object it will be ignored.
+
+##### Authentication
+
+This endpoint requires a valid JWT token in the Authorization header. To obtain a token, see the /api/Auth/login endpoint.
+
+##### Request Body
+
+The request body must contain a JSON object with all the following properties:
+
+ - `name` (string): The name of the brew.
+ - `style` (string): The style of the brew.
+ - `abv` (decimal): The ABV (alcohol by volume) of the brew.
+ - `ibu` (decimal): The IBU (international bitterness unit) of the brew.
+ - `description` (string): The description of the brew.
+
+##### Response
+
+The response is a JSON object with the following properties:
+
+ - `id` (integer): The identifier of the newly created brew
+ - `name` (string): The name of the newly created brew.
+ - `style` (string): The style of the newly created brew.
+ - `abv` (decimal): The ABV (alcohol by volume) of the newly created brew.
+ - `ibu` (decimal): The IBU (international bitterness unit) of the newly created brew.
+ - `description` (string): The description of the newly created brew.
+
+##### Example Request
 
 ```
+POST /api/Brews/Create HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+
 {
-  "id": 0,
-  "name": "string",
-  "style": "string",
-  "abv": 0,
-  "ibu": 0,
-  "description": "string"
+  "name": "Belgian Wit",
+  "style": "Belgian Wheat Beer",
+  "abv": 5.0,
+  "ibu": 20,
+  "description": "Belgian Wit is a refreshing beer brewed with wheat, orange peel, and coriander. It has a cloudy appearance and a light, crisp flavor with a hint of citrus."
 }
 ```
-Note that when passing an item with an existing id in the database, the API will return error 400 and inform the existing id.
 
-`POST https://perna-beer-api.azurewebsites.net/api/Brews/CreateMultiple`
+##### Example Response
 
-Inserts a series of new items into the database. The new items must be passed in the request body in JSON format, as shown in the example below.
 ```
-[{
-  "id": 0,
-  "name": "string",
-  "style": "string",
-  "abv": 0,
-  "ibu": 0,
-  "description": "string"
-},
+HTTP/1.1 201 Created
+Content-Type: application/json
+
 {
   "id": 1,
-  "name": "string",
-  "style": "string",
-  "abv": 0,
-  "ibu": 0,
-  "description": "string"
+  "name": "Belgian Wit",
+  "style": "Belgian Wheat Beer",
+  "abv": 5.0,
+  "ibu": 20,
+  "description": "Belgian Wit is a refreshing beer brewed with wheat, orange peel, and coriander. It has a cloudy appearance and a light, crisp flavor with a hint of citrus."
+}
+```
+
+#### POST `/api/Brews/CreateMultiple`
+
+Inserts a series of new items into the database. The new items must be passed in the request body in JSON format, as shown in the example below.
+The Id will be autogenerated and if there's an id in the JSON object it will be ignored.
+
+##### Authentication
+
+This endpoint requires a valid JWT token in the Authorization header. To obtain a token, see the /api/Auth/login endpoint.
+
+##### Request Body
+
+The request body must contain an JSON array of objects with all the following properties:
+
+ - `name` (string): The name of the brew.
+ - `style` (string): The style of the brew.
+ - `abv` (decimal): The ABV (alcohol by volume) of the brew.
+ - `ibu` (decimal): The IBU (international bitterness unit) of the brew.
+ - `description` (string): The description of the brew.
+
+##### Response
+
+The response is a JSON array of objects, each representing a brew that was successfully created in the 'Brews' table. The object has the following properties:
+
+ - `id` (integer): The identifier of the newly created brew
+ - `name` (string): The name of the newly created brew.
+ - `style` (string): The style of the newly created brew.
+ - `abv` (decimal): The ABV (alcohol by volume) of the newly created brew.
+ - `ibu` (decimal): The IBU (international bitterness unit) of the newly created brew.
+ - `description` (string): The description of the newly created brew.
+    
+##### Example Request
+
+```
+POST /api/Brews/CreateMultiple HTTP/1.1
+Host: https://perna-beer-api.azurewebsites.net
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+
+[{
+  "name": "Stout",
+  "style": "Imperial Stout",
+  "abv": 10.5,
+  "ibu": 80,
+  "description": "A dark, full-bodied, roasty, malty ale with a complementary oatmeal flavor."
+},
+{
+  "name": "IPA",
+  "style": "New England IPA",
+  "abv": 7.2,
+  "ibu": 55,
+  "description": "A hoppy beer that is characterized by its juicy and hazy appearance, with low bitterness and a citrusy aroma."
 }]
 ```
-Note that when passing an item with an existing id in the database, the API will return status 400 and inform the existing ids.
-When passing duplicate ids in the request, the API will return error 400 and inform the duplicate ids in the request.
+
+##### Example Response
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+[{"id": 15,"name": "Stout","style": "Imperial Stout","abv": 10.5,"ibu": 80,"description": "A dark, full-bodied, roasty, malty ale with a complementary oatmeal flavor."},{"id": 16,"name": "IPA","style": "New England IPA","abv": 7.2,"ibu": 55,"description": "A hoppy beer that is characterized by its juicy and hazy appearance, with low bitterness and a citrusy aroma."}]
+```
