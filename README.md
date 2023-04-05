@@ -1,39 +1,41 @@
 # Perna-Beer-API
-## Introdução
-Este repositório contém o código fonte da API disponibilizada publicamente em https://perna-beer-api.azurewebsites.net/. 
-O objetivo desta API é realizar operações CRUD (Create, Read, Update, Delete) em uma única tabela (Brews) hospedada na Azure SQL Server. 
-A tabela Brews contém informações de tipos diferentes de cerveja, um exemplo de suas primeiras 5 linhas são:
+## Introduction
+This repository contains the source code of the API publicly available at https://perna-beer-api.azurewebsites.net/.
+
+The purpose of this API is to perform CRUD (Create, Read, Update, Delete) operations on a single table (Brews) hosted on Azure SQL Server.
+
+The Brews table contains information on different types of beer, with an example of its first 5 rows shown below:
 
 |Id|Name|Style|ABV|IBU|Description|
-|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+|:--------|:--------|:--------|:--------|:--------|:--------|
 |1|WitBier|Belgian Witbier|5.00|20|A refreshing wheat beer with citrus and coriander notes.|
 |2|Weissbier|German Wheat Beer|5.20|12|A light, refreshing wheat beer|
 |3|IPA|India Pale Ale|6.50|70|A hoppy beer with a bitter finish|
 |4|Hefeweizen|German Hefeweizen|5.50|15|A traditional German wheat beer with fruity and spicy notes.|
 |5|Stout|Irish Dry Stout|4.00|40|A dark and roasty beer with a creamy texture and hints of coffee and chocolate.|
 
-A documentação Swagger pode ser acessada através do link https://perna-beer-api.azurewebsites.net/swagger/index.html
+The Swagger documentation can be accessed at https://perna-beer-api.azurewebsites.net/swagger/index.html.
 
 ## Getting Started
-Para setar o ambiente local, é necessário exportar a variável ambiente `DB_CONNECTION_STRING` com as instruções para conexão ao banco de dados. Também é necessário exportar algum valor para a variável ambiente `TOKEN`, que será utilizada para a autenticação por JWT do usuário da API.
+To set up the local environment, it is necessary to export the environment variable DB_CONNECTION_STRING with the instructions for connecting to the database. It is also necessary to export some value to the environment variable TOKEN, which will be used for JWT authentication of the API user.
 
-## Autenticação JWT
-Para acessar a maior parte dos endpoints da API é necessário obter o token JWT para autenticação. Isso pode ser feito através da seguinte requisição
-`GET https://perna-beer-api.azurewebsites.net/api/Auth/login`
+## JWT Authentication
+To access most of the API endpoints, it's necessary to obtain a JWT token for authentication. This can be done through the following request:
 ```
+POST https://perna-beer-api.azurewebsites.net/api/Auth/login
 {
   "username": "Ploo",
   "password": "password"
 }
 ```
-A API pode ser acessada através do Swagger UI https://perna-beer-api.azurewebsites.net/swagger/index.html. Repare que existe um campo "Authorize", neste campo é possível inserir o token JWT obtido na requisição anterior e assim o Swagger se encarregará de preencher o campo 'Authorize' com o parâmetro correto nas próximas requições.
+You can access the API via the Swagger UI at https://perna-beer-api.azurewebsites.net/swagger/index.html. Note that there is an "Authorize" field in the UI where you can enter the JWT token obtained from the previous request. Swagger will then automatically fill in the 'Authorize' field with the correct parameter for subsequent requests.
 
-## Documentação da API
-A API contém os seguintes EndPoints:
+## API Documentation
+The API contains the following endpoints:
 
 `POST https://perna-beer-api.azurewebsites.net/api/Auth/register`
 
-Cria um usuário novo. No corpo da requisição é necessário um arquivo JSON com o formato:
+Creates a new user. A JSON object with the following format is required in the request body:
 ```
 {
   "username": "string",
@@ -43,7 +45,7 @@ Cria um usuário novo. No corpo da requisição é necessário um arquivo JSON c
 
 `POST https://perna-beer-api.azurewebsites.net/api/Auth/login`
 
-Cria o JWT token para acesso aos endpoints privados. No corpo da requisição é neecssário um arquivo JSON com o formato:
+Creates a JWT token for accessing restricted endpoints. A JSON object with the following format is required in the request body:
 ```
 {
   "username": "string",
@@ -53,16 +55,29 @@ Cria o JWT token para acesso aos endpoints privados. No corpo da requisição é
 
 `GET https://perna-beer-api.azurewebsites.net/api/Brews/`
 
-Retorna um JSON com todos os items da tabela 'Brews'.
+Returns a JSON with all items from the 'Brews' table.
+
+This endpoint can also receive the following filter parameters:
+
+- abvMin (decimal): filters the results to only include brews with an ABV (alcohol by volume) greater than or equal to this value.
+- abvMax (decimal): filters the results to only include brews with an ABV (alcohol by volume) less than or equal to this value.
+- ibuMin (decimal): filters the results to only include brews with an IBU (international bitterness unit) greater than or equal to this value.
+- ibuMax (decimal): filters the results to only include brews with an IBU (international bitterness unit) less than or equal to this value.
+
+Example usage:
+`GET https://perna-beer-api.azurewebsites.net/api/Brews/?abvMin=4.5&abvMax=5.5&ibuMin=20&ibuMax=40`
+
+This will return all brews with an ABV between 4.5 and 5.5 and an IBU between 20 and 40.
 
 `GET https://perna-beer-api.azurewebsites.net/api/Brews/{id}`
 
-Retorna um JSON com o item da tabela 'Brews' com id = {id}.
+Returns a JSON representation of the item from the 'Brews' table that matches the specified id.
 
 `PUT https://perna-beer-api.azurewebsites.net/api/Brews/{id}`
 
-Altera o item da tabela 'Brews' com id = {id}. É necessário passar as alterações no corpo da requisição em formato JSON como no exemplo abaixo.
-Note que o 'id' do objeto no corpo da requisição e no parâmetro da requisição devem ser iguais.
+Updates the item from the 'Brews' table that matches the specified {id}. The updates must be passed in the request body in JSON format, as shown in the example below.
+
+Note that the 'id' of the object in the request body and the request parameter must be the same.
 ```
 {
   "id": 0,
@@ -76,12 +91,12 @@ Note que o 'id' do objeto no corpo da requisição e no parâmetro da requisiç�
 
 `DELETE https://perna-beer-api.azurewebsites.net/api/Brews/{id}`
 
-Deleta a observação com id = {id}.
+Deletes the item from the 'Brews' table that matches the specified {id}.
 
 `POST https://perna-beer-api.azurewebsites.net/api/Brews/Create`
 
-Insere no banco uma nova observação. É necessário passar a nova observação no corpo da requisição em formato JSON como no exemplo abaixo.
-Repare que o Id não é gerado automaticamente e deve ser informado na requisição.
+Inserts a new item into the database. The new item must be passed in the request body in JSON format, as shown in the example below.
+Note that the Id is not generated automatically and must be informed in the request.
 
 ```
 {
@@ -93,11 +108,11 @@ Repare que o Id não é gerado automaticamente e deve ser informado na requisiç
   "description": "string"
 }
 ```
-Repare que, ao passar uma observação com id já existente no banco, a API retornará o erro 400 e informará o ID já existente. 
+Note that when passing an item with an existing id in the database, the API will return error 400 and inform the existing id.
 
 `POST https://perna-beer-api.azurewebsites.net/api/Brews/CreateMultiple`
 
-Insere no banco uma série de novas observações. É necessário passar as novas observações no corpo da requisição em formato JSON como no exemplo abaixo.
+Inserts a series of new items into the database. The new items must be passed in the request body in JSON format, as shown in the example below.
 ```
 [{
   "id": 0,
@@ -116,7 +131,5 @@ Insere no banco uma série de novas observações. É necessário passar as nova
   "description": "string"
 }]
 ```
-Repare que, ao passar uma observação com id já existente no banco, a API retornará o erro 400 e informará os IDs já existentes. 
-Ao passar IDs repetidos na requisição, a API retornará o erro 400 e informará os IDs repetidos na requisição.
-
-Nenhuma autenticação é necessária para o funcionamento da API.
+Note that when passing an item with an existing id in the database, the API will return status 400 and inform the existing ids.
+When passing duplicate ids in the request, the API will return error 400 and inform the duplicate ids in the request.
