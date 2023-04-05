@@ -38,11 +38,11 @@ namespace WebApi.Controllers
             }
             if(ibuMin.HasValue)
             {
-                brews = brews.Where(b => b.Abv >= ibuMin).ToList();
+                brews = brews.Where(b => b.Ibu >= ibuMin).ToList();
             }
             if(ibuMax.HasValue)
             {
-                brews = brews.Where(b => b.Abv >= ibuMax).ToList();
+                brews = brews.Where(b => b.Ibu <= ibuMax).ToList();
             }
 
             return brews;
