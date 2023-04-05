@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Filters;
 using WebApi.Models;
 using WebApi.Data;
+using WebApi.Middleware;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,28 +18,9 @@ builder.Services.AddDbContext<DBContext>(options =>
     options.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")));
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => {
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-    {
-        Description = "Standard Authorization header using the Bearer scheme(\"Bearer {token}\")",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey
-    });
-    options.OperationFilter<SecurityRequirementsOperationFilter>();
-});
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>{
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8
-                .GetBytes(Environment.GetEnvironmentVariable("TOKEN"))),
-            ValidateIssuer = false,
-            ValidateAudience = false
-        };
-    });
+builder.Services.ConfigureSwagger();
+builder.Services.AddJwtAuthentication();
 
 var app = builder.Build();
 
