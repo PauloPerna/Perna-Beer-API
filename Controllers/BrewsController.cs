@@ -62,7 +62,7 @@ namespace WebApi.Controllers
             return brew;
         }
 
-        // GET: api/Brews/Search
+        // GET: api/Brews/Search?q=IPA
         [HttpGet("Search")]
         [AllowAnonymous]
         public async Task<ActionResult<List<Brew>>> SearchBrews(string q)
