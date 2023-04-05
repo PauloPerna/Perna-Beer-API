@@ -24,9 +24,28 @@ namespace WebApi.Controllers
         // GET: api/Brews
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<Brew>>> GetBrews()
+        public async Task<ActionResult<IEnumerable<Brew>>> GetBrews(decimal? abvMin, decimal? abvMax, decimal? ibuMin, decimal? ibuMax)
         {
-            return await _context.Brews.ToListAsync();
+            var brews = await _context.Brews.ToListAsync();
+
+            if(abvMin.HasValue)
+            {
+                brews = brews.Where(b => b.Abv >= abvMin).ToList();
+            }
+            if(abvMax.HasValue)
+            {
+                brews = brews.Where(b => b.Abv <= abvMax).ToList();
+            }
+            if(ibuMin.HasValue)
+            {
+                brews = brews.Where(b => b.Abv >= ibuMin).ToList();
+            }
+            if(ibuMax.HasValue)
+            {
+                brews = brews.Where(b => b.Abv >= ibuMax).ToList();
+            }
+
+            return brews;
         }
 
         // GET: api/Brews/5
