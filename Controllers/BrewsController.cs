@@ -53,13 +53,12 @@ namespace WebApi.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Brew>> GetBrew(int id)
         {
-            var brew = await _context.Brews.FindAsync(id);
-
-            if (brew == null)
+            if (!BrewExists(id))
             {
                 return NotFound();
             }
 
+            var brew = await _context.Brews.FindAsync(id);
             return brew;
         }
 
@@ -139,12 +138,12 @@ namespace WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBrew(int id)
         {
-            var brew = await _context.Brews.FindAsync(id);
-            if (brew == null)
+            if (!BrewExists(id))
             {
                 return NotFound();
             }
 
+            var brew = await _context.Brews.FindAsync(id);
             _context.Brews.Remove(brew);
             await _context.SaveChangesAsync();
 
