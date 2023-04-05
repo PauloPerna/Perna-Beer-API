@@ -15,11 +15,41 @@ A tabela Brews contém informações de tipos diferentes de cerveja, um exemplo 
 A documentação Swagger pode ser acessada através do link https://perna-beer-api.azurewebsites.net/swagger/index.html
 
 ## Getting Started
-Para setar o ambiente local, é necessário exportar a variável ambiente `DB_CONNECTION_STRING` com as instruções para conexão ao banco de dados.
-Além disso, também é necessário adicionar as dependências `Microsoft.EntityFrameworkCore` e `Microsoft.EntityFrameworkCore.SqlServer`
+Para setar o ambiente local, é necessário exportar a variável ambiente `DB_CONNECTION_STRING` com as instruções para conexão ao banco de dados. Também é necessário exportar algum valor para a variável ambiente `TOKEN`, que será utilizada para a autenticação por JWT do usuário da API.
+
+## Autenticação JWT
+Para acessar a maior parte dos endpoints da API é necessário obter o token JWT para autenticação. Isso pode ser feito através da seguinte requisição
+`GET https://perna-beer-api.azurewebsites.net/api/Auth/login`
+```
+{
+  "username": "Ploo",
+  "password": "password"
+}
+```
+A API pode ser acessada através do Swagger UI https://perna-beer-api.azurewebsites.net/swagger/index.html. Repare que existe um campo "Authorize", neste campo é possível inserir o token JWT obtido na requisição anterior e assim o Swagger se encarregará de preencher o campo 'Authorize' com o parâmetro correto nas próximas requições.
 
 ## Documentação da API
 A API contém os seguintes EndPoints:
+
+`POST https://perna-beer-api.azurewebsites.net/api/Auth/register`
+
+Cria um usuário novo. No corpo da requisição é necessário um arquivo JSON com o formato:
+```
+{
+  "username": "string",
+  "password": "string"
+}
+```
+
+`POST https://perna-beer-api.azurewebsites.net/api/Auth/login`
+
+Cria o JWT token para acesso aos endpoints privados. No corpo da requisição é neecssário um arquivo JSON com o formato:
+```
+{
+  "username": "string",
+  "password": "string"
+}
+```
 
 `GET https://perna-beer-api.azurewebsites.net/api/Brews/`
 
