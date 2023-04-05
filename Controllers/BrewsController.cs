@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BrewsController : ControllerBase
     {
         private readonly DBContext _context;
@@ -21,6 +23,7 @@ namespace WebApi.Controllers
 
         // GET: api/Brews
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Brew>>> GetBrews()
         {
             return await _context.Brews.ToListAsync();
@@ -28,6 +31,7 @@ namespace WebApi.Controllers
 
         // GET: api/Brews/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Brew>> GetBrew(int id)
         {
             var brew = await _context.Brews.FindAsync(id);

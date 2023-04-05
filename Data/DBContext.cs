@@ -9,7 +9,12 @@ namespace WebApi.Data
         {
 
         }
-        //Add DbSet properties for each of your tables here
         public DbSet<Brew> Brews { get; set; }
+        public DbSet<User> Users { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .HasKey(u => u.Username);
+        }
     }
 }
