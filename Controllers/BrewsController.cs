@@ -62,6 +62,23 @@ namespace WebApi.Controllers
             return brew;
         }
 
+        // GET: api/Brews/Search
+        [HttpGet("Search")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<Brew>>> SearchBrews(string q)
+        {
+            var brews = await _context.Brews
+                .Where(b => b.Name.Contains(q) || b.Style.Contains(q) || b.Description.Contains(q))
+                .ToListAsync();
+            
+            if(brews == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(brews);
+        }
+
         // POST: api/Brews/Create
         [HttpPost]
         [Route("Create")]
