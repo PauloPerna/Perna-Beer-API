@@ -33,7 +33,7 @@ You can access the API via the Swagger UI at https://perna-beer-api.azurewebsite
 ## API Documentation
 
 ### Auth
-#### POST `/api/Auth/register
+#### POST `/api/Auth/register`
 
 `POST https://perna-beer-api.azurewebsites.net/api/Auth/register`
 
