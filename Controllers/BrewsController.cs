@@ -42,7 +42,7 @@ namespace WebApi.Controllers
             }
             if(ibuMax.HasValue)
             {
-                brews = brews.Where(b => b.Ibu >= ibuMax).ToList();
+                brews = brews.Where(b => b.Ibu <= ibuMax).ToList();
             }
 
             return brews;
